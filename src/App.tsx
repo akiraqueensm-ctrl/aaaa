@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useMotionValue, useMotionTemplate } from 'motion/react';
 import { 
   Play, 
   Search, 
@@ -30,7 +30,7 @@ import {
 const StaticTunnelBackground = () => (
   <div className="absolute inset-0 z-0 overflow-hidden">
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,0,0,0.15)_0%,transparent_70%)]" />
-    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-[0.1] grayscale mix-blend-overlay" />
+    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center opacity-[0.1] grayscale" />
     <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
   </div>
 );
@@ -71,7 +71,7 @@ const CrtEffect = () => (
     <motion.div 
       animate={{ y: ["-100%", "100%"] }}
       transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-      className="absolute inset-0 w-full h-[10%] bg-white/5 blur-xl pointer-events-none"
+      className="absolute inset-0 w-full h-[10%] bg-gradient-to-b from-transparent via-white/5 to-transparent pointer-events-none"
     />
   </div>
 );
@@ -89,22 +89,24 @@ const Vignette = () => (
 );
 
 const Flashlight = () => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [mouseX, mouseY]);
+
+  const background = useMotionTemplate`radial-gradient(circle 400px at ${mouseX}px ${mouseY}px, rgba(139, 0, 0, 0.15), transparent 80%)`;
 
   return (
-    <div 
-      className="fixed inset-0 pointer-events-none z-[97] mix-blend-soft-light opacity-60"
-      style={{
-        background: `radial-gradient(circle 400px at ${mousePos.x}px ${mousePos.y}px, rgba(139, 0, 0, 0.15), transparent 80%)`
-      }}
+    <motion.div 
+      className="fixed inset-0 pointer-events-none z-[97] opacity-60"
+      style={{ background }}
     />
   );
 };
@@ -113,11 +115,11 @@ const DustScratches = () => (
   <div className="fixed inset-0 pointer-events-none z-[102] overflow-hidden opacity-[0.03]">
     <motion.div 
       animate={{ 
-        x: [-10, 10, -5, 5, 0],
-        y: [-10, 5, 10, -5, 0],
-        opacity: [0.1, 0.3, 0.1, 0.4, 0.1]
+        x: [-5, 5, -5],
+        y: [-5, 5, -5],
+        opacity: [0.1, 0.3, 0.1]
       }}
-      transition={{ duration: 0.2, repeat: Infinity, ease: "linear" }}
+      transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
       className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] scale-150"
     />
   </div>
@@ -140,7 +142,7 @@ const GlitchOverlay = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] pointer-events-none overflow-hidden mix-blend-screen opacity-30">
+    <div className="fixed inset-0 z-[200] pointer-events-none overflow-hidden opacity-30">
       <div className="absolute inset-0 bg-accent/5" />
       <div className="absolute top-1/4 left-0 w-full h-px bg-accent shadow-[0_0_10px_var(--color-accent)]" style={{ transform: `translateY(${Math.random() * 100}vh)` }} />
       <div className="absolute top-3/4 left-0 w-full h-px bg-accent shadow-[0_0_10px_var(--color-accent)]" style={{ transform: `translateY(${Math.random() * 100}vh)` }} />
@@ -406,7 +408,7 @@ const ClassifiedStamp = () => (
     initial={{ opacity: 0, scale: 1.5, rotate: -20 }}
     whileInView={{ opacity: 0.2, scale: 1, rotate: -15 }}
     viewport={{ once: true }}
-    className="absolute top-20 right-20 border-4 border-accent text-accent px-8 py-4 font-black text-4xl tracking-[0.2em] uppercase select-none pointer-events-none mix-blend-overlay"
+    className="absolute top-20 right-20 border-4 border-accent text-accent px-8 py-4 font-black text-4xl tracking-[0.2em] uppercase select-none pointer-events-none opacity-20"
   >
     SEALED_TEXT
   </motion.div>
@@ -499,11 +501,12 @@ export default function App() {
               y: [-100, 100, -100]
             }}
             transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-accent/10 rounded-full blur-[250px]"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(139,0,0,0.1) 0%, transparent 70%)' }}
           />
           
           {/* Static Background Image with Grain */}
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-[0.07] grayscale scale-110 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center opacity-[0.07] grayscale scale-110" />
           
           {/* Dynamic Light Flickers */}
           <motion.div 
@@ -640,7 +643,7 @@ export default function App() {
                 className="col-span-2 relative aspect-video overflow-hidden border border-white/10 grayscale hover:grayscale-0 transition-all duration-1000 group"
               >
                 <img 
-                  src="https://images.unsplash.com/photo-1505144808419-1957a94ca61e?auto=format&fit=crop&q=80" 
+                  src="https://images.unsplash.com/photo-1505144808419-1957a94ca61e?auto=format&fit=crop&q=80&w=1080" 
                   alt="Found footage of a dark, mysterious tunnel with a glowing red light" 
                   className="w-full h-full object-cover opacity-30 group-hover:opacity-100 transition-all duration-1000 scale-110 group-hover:scale-100"
                   referrerPolicy="no-referrer"
@@ -722,7 +725,7 @@ export default function App() {
 
       {/* The Objective */}
       <section className="py-48 relative overflow-hidden border-t border-white/5">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/[0.03] rounded-full blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(139,0,0,0.03) 0%, transparent 70%)' }} />
         
         {/* Blood Drips */}
         <div className="absolute top-0 left-1/3 w-px h-64 blood-drip animate-[pulse_5s_ease-in-out_infinite]" />
@@ -847,7 +850,7 @@ export default function App() {
               transition={{ duration: 1.5 }}
               className="p-16 border border-white/10 bg-black relative overflow-hidden group"
             >
-              <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent/10 rounded-full blur-[100px] group-hover:bg-accent/20 transition-colors" />
+              <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full transition-colors" style={{ background: 'radial-gradient(circle, rgba(139,0,0,0.1) 0%, transparent 70%)' }} />
               <div className="relative z-10">
                 <div className="flex items-center gap-8 mb-12">
                   <div className="w-20 h-20 border border-accent/30 bg-accent/5 flex items-center justify-center">
